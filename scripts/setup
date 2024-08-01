@@ -1,0 +1,58 @@
+#!/bin/bash
+#! Install the vulcanize dependencies.
+
+IS_BREW_INSTALLED=$(command -v brew)
+PACKAGE_FILE="./package.ini"
+
+# Parse the package.ini file for brew dependencies.
+function parse_ini_brew_dependencies() {
+    local in_section=false
+    local brew_dependencies=()
+    cat "$PACKAGE_FILE" | while read line; do
+        # if line starts with ; or #, then skip.
+        if [[ $line == ";"* ]] || [[ $line == "#"* ]]; then
+            continue
+        fi
+        if [[ $line == "[brew dependencies]" ]]; then
+            in_section=true
+        elif [[ $line == "["* ]]; then
+            in_section=false
+        elif [[ $in_section == true ]]; then
+            friendly_line=$(echo "$line" | sed 's/=/@/g')
+            brew_dependencies+=("$friendly_line")
+        fi
+    done
+    echo "${brew_dependencies[@]}"
+}
+
+# Check if the dependencies are installed.
+function check_depdendencies() {
+    local brew_dependencies
+    parse_ini_brew_dependencies
+    brew_dependencies=($(parse_ini_brew_dependencies))
+    # Get a list of all keys under [brew dependencies] in the package.ini file.
+    for dependency in "${brew_dependencies[@]}"; do
+        local dependency_name
+        dependency_name=$(echo "$dependency" | awk -F '@' '{print $1}')
+        if ! command -v "$dependency_name" &> /dev/null; then
+            if [ -z "$IS_BREW_INSTALLED" ]; then
+                echo "Please install $dependency" > /dev/stderr
+                exit 1
+            else
+                brew install "$dependency"
+            fi
+        fi
+    done
+}
+
+# Copy githooks to local git folder.
+copy_git_hooks() {
+    cp -r ./scripts/git-hooks/* .git/hooks
+}
+
+function run() {
+    check_depdendencies
+    copy_git_hooks
+}
+
+run
