@@ -1,0 +1,3 @@
+echo "a"
+source ./b
+source ./folder/c

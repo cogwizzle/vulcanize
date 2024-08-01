@@ -1,0 +1,24 @@
+#!/bin/bash
+#! Test the vulcanize tool.
+cd ./test || {
+    echo "Could not find test directory" > /dev/stderr
+    exit 1
+}
+result=$(vulcanize main)
+# Expect results to contain echo "a"
+if [[ "$result" != *"echo \"a\""* ]]; then
+    echo "Expected results to contain echo \"a\"" > /dev/stderr
+    exit 1
+fi
+# Expect results to contain echo "b"
+if [[ "$result" != *"echo \"b\""* ]]; then
+    echo "Expected results to contain echo \"b\"" > /dev/stderr
+    exit 1
+fi
+# Expect results to contain echo "c"
+if [[ "$result" != *"echo \"c\""* ]]; then
+    echo "Expected results to contain echo \"c\"" > /dev/stderr
+    exit 1
+fi
+echo "Test passed" > /dev/stderr
+

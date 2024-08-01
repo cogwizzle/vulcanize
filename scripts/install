@@ -1,0 +1,3 @@
+#!/bin/bash
+#! Install the vulcanize tool.
+sudo wget https://raw.githubusercontent.com/cogwizzle/vulcanize/master/dist/vulcanize -O /usr/local/bin/vulcanize

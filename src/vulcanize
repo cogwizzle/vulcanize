@@ -1,0 +1,43 @@
+#!/bin/bash
+#! Run this command to replace source commands with the content of the file.
+
+ENTRYPOINT=$1
+
+function run() {
+    local entrypoint
+    entrypoint=$1
+    if [ -z "$entrypoint" ]; then
+        echo "Please provide an entrypoint"
+        exit 1
+    fi
+    # echo "entrypoint: $entrypoint" > /dev/stderr
+    # Find all references to source.
+    local sources
+    sources=$(grep -r "source" "$entrypoint" | awk -F 'source' '{print $2}' | awk -F ' ' '{print $1}')
+    # Replace source with the content of the file.
+    # Make temp file.
+    local temp
+    temp="$entrypoint.temp"
+    cp "$entrypoint" "$temp"
+    for source in $sources; do
+        # echo "source: $source" > /dev/stderr
+        local content
+        content=$(run "$source")
+        # echo "$content" > /dev/stderr
+        # For each line of $entrypoint, replace source with the content of the file.
+        local output
+        output=""
+        while read line; do
+            if [[ "$line" == "source $source" ]]; then
+                output+="$content\n"
+            else
+                output+="$line\n"
+            fi
+        done < "$temp"
+        echo -e "$output" > "$temp"
+    done
+    cat "$temp"
+    rm "$temp"
+}
+
+run $ENTRYPOINT
