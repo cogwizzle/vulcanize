@@ -1,3 +1,5 @@
+setup   :
+	@scripts/setup
 install :
 	@sudo cp ./dist/vulcanize /usr/local/bin/vulcanize
 build   :
